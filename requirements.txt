@@ -10,3 +10,8 @@ selenium
 webdriver-manager
 transformers 
 opencv-python
+pytrends
+gdown
+playwright
+nest_asyncio
+beautifulsoup4

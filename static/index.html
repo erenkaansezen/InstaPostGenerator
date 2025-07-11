@@ -40,15 +40,13 @@ document.getElementById('content-form').onsubmit = async function(e) {
         if (data.ok === false) throw new Error(data.error || "Bilinmeyen hata");
 
         outputBox.innerHTML = `
-            <div class="output-row output-title">${escapeHTML(data.content.title)}</div>
-            <br>
             <div class="output-row output-description">${escapeHTML(data.content.description)}</div>
 
             <div class="output-row output-hashtags"><span class="output-label">Hashtag:</span> ${data.hashtags.join(' ')}</div>
             <hr class="output-hr">
             <div class="output-row"><span class="output-label">Görsel Kalite:</span> ${escapeHTML(data.image_quality?.msg)}</div>
             <div class="output-row"><span class="output-label">Metin Kalite:</span> ${escapeHTML(data.text_quality?.msg)}</div>
-            <div class="output-row"><span class="output-label">Keyword Kalite:</span> ${escapeHTML(data.keywords_quality?.msg)}</div>
+            <div class="output-row"><span class="output-label">ASO Kalite:</span> ${escapeHTML(data.keywords_quality?.msg)}</div>
         `;
 
     } catch (err) {

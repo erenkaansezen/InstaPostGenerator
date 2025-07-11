@@ -75,7 +75,7 @@ async def generate_content_from_gdrive(gdrive_url: str = Form(...)):
         quality_agent = QualityControlAgent()
         finalization_agent = FinalizationAgent()
 
-        hashtags = trend_agent.fetch_trends(
+        hashtags = await trend_agent.fetch_trends(
             media_bytes=media_bytes, file_ext=file_ext, topic=None, keywords=keywords_list
         )
         media_caption = understanding_agent.analyze_media(media_bytes, file_ext)
@@ -107,4 +107,8 @@ async def generate_content_from_gdrive(gdrive_url: str = Form(...)):
             "final_post": final_post
         })
     except Exception as ex:
+        import traceback
+        print("----- HATA TRACEBACK -----")
+        print(traceback.format_exc())
+        print("----- HATA SONU -----")
         return JSONResponse({"ok": False, "error": str(ex)}, status_code=400)

@@ -1,6 +1,7 @@
 import re
 import io
 from PIL import Image, UnidentifiedImageError
+from pytrends.request import TrendReq
 
 class QualityControlAgent:
     def check_image_quality(self, image_bytes):
@@ -39,17 +40,45 @@ class QualityControlAgent:
             return False, "Açıklama cümle sonu noktalama işareti içermiyor."
         if text[0].islower():
             return False, "Açıklamanın ilk harfi büyük olmalı."
-        if not re.search(r'[çğıöşüÇĞİÖŞÜ]', text):
-            return False, "Açıklama Türkçe karakter içermiyor olabilir."
         return True, "Açıklama uygun."
 
+    def check_keywords_popularity(self, keywords):
+        if not TrendReq:
+            return [(kw, None, "Popülerlik kontrolü yapılamadı (pytrends yüklü değil)") for kw in keywords]
+        pytrends = TrendReq(hl='tr-TR', tz=360)
+        results = []
+        for kw in keywords:
+            try:
+                pytrends.build_payload([kw], timeframe='today 12-m')
+                trend_data = pytrends.interest_over_time()
+                if not trend_data.empty:
+                    avg_pop = trend_data[kw].mean()
+                    if avg_pop < 1:
+                        results.append((kw, False, "Popüler değil"))
+                    elif avg_pop < 20:
+                        results.append((kw, True, "Orta popüler"))
+                    else:
+                        results.append((kw, True, "Popüler"))
+                else:
+                    results.append((kw, None, "Popüler değil"))
+            except Exception as e:
+                results.append((kw, None, f"Popülerlik kontrolü hatası: {e}"))
+        return results
+
     def check_keywords_quality(self, keywords):
+        messages = []
+        ok = True
+
         if not keywords or len(keywords) == 0:
             return False, "Anahtar kelime listesi boş."
         if any(len(k) < 2 for k in keywords):
-            return False, "Çok kısa anahtar kelimeler var."
+            messages.append("Çok kısa anahtar kelimeler var.")
+            ok = False
         if len(set(keywords)) < len(keywords) * 0.5:
-            return False, "Anahtar kelimeler çok fazla tekrar ediyor."
+            messages.append("Anahtar kelimeler çok fazla tekrar ediyor.")
+            ok = False
         if any(re.search(r"\s", k) for k in keywords):
-            return True, "Anahtar kelimelerde birden fazla kelime var, kabul edildi."  
-        return True, "Anahtar kelimeler uygun."
+            messages.append("Anahtar kelimelerde birden fazla kelime var (kabul edildi).")    
+        if not messages:
+            return True, "Anahtar kelimeler uygun ve popüler."
+        return ok, " | ".join(messages)

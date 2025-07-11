@@ -2,9 +2,6 @@ import os
 from openai import OpenAI
 
 def clean_gpt_output(text):
-    """
-    Başlık, Açıklama, Title, Description, Hashtag gibi etiketleri ve baştaki fazlalıkları temizler.
-    """
     unwanted_prefixes = [
         "başlık:", "açıklama:", "title:", "description:", "hashtag:",
         "Başlık:", "Açıklama:", "Title:", "Description:", "Hashtag:"
