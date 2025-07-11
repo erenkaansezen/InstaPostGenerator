@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>🚀 Instagram İçerik Üreticisi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="header">
+    🚀 Instagram İçerik Üreticisi
+</div>
+<div class="main-row">
+    <form id="content-form" class="mainbox" autocomplete="off">
+        <label for="gdrive_url">Google Drive Klasör Linki</label>
+        <input type="text" id="gdrive_url" name="gdrive_url" placeholder="https://drive.google.com/drive/folders/..." required>
+        <div class="note">
+            * Klasörde <b>description.txt</b>, <b>keywords.txt</b>, <b>.jpg</b> veya <b>.png</b> dosyaları olmalı.<br>
+        </div>
+        <button type="submit">İçerik Üret</button>
+    </form>
+    <div class="output-card" id="output">
+        <div class="empty"><span>🧑‍💻</span> İçerik çıktısı burada gözükecek.</div>
+    </div>
+</div>
+<script>
+document.getElementById('content-form').onsubmit = async function(e) {
+    e.preventDefault();
+    const outputBox = document.getElementById('output');
+    outputBox.innerHTML = `<div class="empty"><span>⏳</span> İşleniyor...</div>`;
+    let gdrive_url = document.getElementById('gdrive_url').value.trim();
+    try {
+        const fd = new FormData();
+        fd.append("gdrive_url", gdrive_url);
+        const resp = await fetch("/generate_content_from_gdrive", {
+            method: "POST",
+            body: fd
+        });
+        const data = await resp.json();
+        if (data.ok === false) throw new Error(data.error || "Bilinmeyen hata");
+
+        outputBox.innerHTML = `
+            <div class="output-row output-title">${escapeHTML(data.content.title)}</div>
+            <br>
+            <div class="output-row output-description">${escapeHTML(data.content.description)}</div>
+
+            <div class="output-row output-hashtags"><span class="output-label">Hashtag:</span> ${data.hashtags.join(' ')}</div>
+            <hr class="output-hr">
+            <div class="output-row"><span class="output-label">Görsel Kalite:</span> ${escapeHTML(data.image_quality?.msg)}</div>
+            <div class="output-row"><span class="output-label">Metin Kalite:</span> ${escapeHTML(data.text_quality?.msg)}</div>
+            <div class="output-row"><span class="output-label">Keyword Kalite:</span> ${escapeHTML(data.keywords_quality?.msg)}</div>
+        `;
+
+    } catch (err) {
+        outputBox.innerHTML = `<div class="empty" style="color:#e3716d;">Hata: ${err.message}</div>`;
+    }
+};
+function escapeHTML(str) {
+    if (!str) return "";
+    return String(str).replace(/[<>&"']/g, function (c) {
+        return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c];
+    });
+}
+</script>
+</body>
+</html>

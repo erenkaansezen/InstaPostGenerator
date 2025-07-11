@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+requests
+python-dotenv
+pillow
+transformers
+torch
+beautifulsoup4
+selenium 
+webdriver-manager
+transformers 
+opencv-python
